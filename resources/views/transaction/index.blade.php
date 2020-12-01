@@ -11,8 +11,8 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Transaksi</li>
+              <li class="breadcrumb-item"><a href="#">Transaksi</a></li>
+              
             </ol>
           </div>
           
@@ -29,9 +29,30 @@
             <div class="card">
                 
               <div class="card-header"  >
-                  <a class="btn btn-primary" href="{{route('dashboard-transaction.create')}}">
-                    <i class="fas fa-edit btn-xs" ></i> Tambah Transaksi
-                </a>
+                <div class="row">
+                  <div class="col-md-5">
+                    @if(Auth::user()->role == "apoteker")
+                    <a class="btn btn-primary" href="{{route('dashboard-transaction.create')}}">
+                      <i class="fas fa-edit btn-xs" ></i> Tambah Transaksi
+                    </a>
+                    @endif
+                  </div>
+                  <div class="col-md-7">
+                      
+                        <form action="{{route('dashboard-transaction.index')}}" method="GET">
+                          <div class="input-group">
+                          
+                              @csrf
+                              <input type="date" class=""  value="" name="from" required>
+                              <div class="input-group-addon">to</div>
+                              <input type="date" class=""  name="to" required>
+                              <button type="submit" class="btn btn-primary">Search</button>
+                        </div>
+                      </form>
+                  </div>
+                </div>
+                
+                  
                   
               </div>
               <!-- /.card-header -->
@@ -40,13 +61,16 @@
                   <thead>
                     <tr>
                       <th>No</th>
-                      <th>Date</th>
+                      <th>Tanggal</th>
+                      <th>Dibuat Oleh</th>
                       <th>Item</th>
                       <th>Qty</th>
-                      <th>Price</th>
-                      <th>Total</th>
+                      <th>Price (Rp)</th>
+                      <th>Total (Rp)</th>
                       <th>Status</th>
+                      @if(Auth::user()->role == "apoteker")
                       <th>Action</th>
+                      @endif
                     </tr>
                   </thead>
                   <tbody>
@@ -54,11 +78,12 @@
                     @foreach ($transactions as $transaction)
                         <tr>
                           <td>{{$no}}</td>
-                          <td>{{date('d-m-Y', strtotime($transaction->created_at))}}</td>
+                          <td>{{date('d-m-Y', strtotime($transaction->date))}}</td>
+                          <td>{{$transaction->user}}</td>
                           <td>{{$transaction->obat_name}}</td>
-                          <td>{{$transaction->qty}}</td>
-                          <td>{{rupiah($transaction->price)}}</td>
-                          <td>{{rupiah($transaction->total)}}</td>
+                          <td class="text-right">{{$transaction->qty}}</td>
+                          <td class="text-right">{{rupiah($transaction->price)}}</td>
+                          <td class="text-right">{{rupiah($transaction->total)}}</td>
                           <td>
                             @if($transaction->status == "Approved")
                               <span class="badge badge-pill badge-primary">
@@ -71,6 +96,7 @@
                             </span>
                             @endif
                           </td>
+                          @if(Auth::user()->role == "apoteker")
                           <td>
                             <div class="btn-group">
                               @if($transaction->status == "Draft")
@@ -83,6 +109,7 @@
                               @endif
                           </div>
                           </td>
+                          @endif
                         </tr>
                         <?php $no++ ?>
                     @endforeach
@@ -106,10 +133,7 @@
 
   <script>
     $(document).ready(function(){
-         @if(session()->has('success'))
-              toastr.success("{{session('success')}}")
-              
-         @endif
+        
          
       })
   </script>

@@ -7,7 +7,7 @@ use App\Obat;
 use App\Category;
 use App\Satuan;
 use Illuminate\Support\Str;
-
+use Auth;
 class ObatController extends Controller
 {
     /**
@@ -18,10 +18,10 @@ class ObatController extends Controller
     public function index(Request $request)
     {
         session()->forget('berhasil');
-        $obat = Obat::with('category')->get();
-        $category = Category::all();
-        $satuan = Satuan::all();
-        return view('obat/index', ['obat' => $obat, 'categories' => $category,'satuan' => $satuan]);
+        $obat = Obat::with('category')->orderBy('created_at','DESC')->with('category')->get();
+        $category = Category::where('status','active')->get();
+        
+        return view('obat/index', ['obat' => $obat, 'categories' => $category]);
     }
 
     /**
@@ -29,12 +29,12 @@ class ObatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
-    {
-        $category = Category::all();
-        $satuan = Satuan::all();
-        return view('obat.create', ['categories' => $category, 'satuan' => $satuan]);
-    }
+    // public function create()
+    // {
+    //     $category = Category::where('status','active')->get();
+        
+    //     return view('obat.create', ['categories' => $category]);
+    // }
 
     /**
      * Store a newly created resource in storage.
@@ -44,16 +44,20 @@ class ObatController extends Controller
      */
     public function store(Request $request)
     {
+        $check = Obat::where('plu', $request->plu)->get();
         
+        if(count($check) > 0){
+            return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. PLU sudah pernah digunakan ');;
+        }
 
         Obat::create([
             'plu' => $request->plu,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'category' => $request->category,
+            'category_id' => $request->category,
             'satuan' => $request->satuan,
             'stock' => $request->stock,
             'price' => $request->price,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('dashboard-obat.index')->with('success', 'Success');
@@ -90,15 +94,20 @@ class ObatController extends Controller
      */
     public function update(Request $request, $id)
     {
-
+        $obat = Obat::find($id);
+        $check = Obat::where('plu', $request->plu)->where('plu','!=',$obat->plu)->get();
+        
+        if(count($check) > 0){
+            return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. PLU sudah pernah digunakan ');;
+        }
         Obat::findOrFail($id)->update([
             'plu' => $request->plu,
             'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'category' => $request->category,
+            'category_id' => $request->category,
             'satuan' => $request->satuan,
             'stock' => $request->stock,
             'price' => $request->price,
+            'status' => $request->status,
         ]);
         return redirect()->route('dashboard-obat.index')->with('success', 'Updated Success');
     }

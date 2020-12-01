@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Category;
 use Illuminate\Support\Str;
+use Auth;
 class CategoryController extends Controller
 {
     /**
@@ -15,7 +16,10 @@ class CategoryController extends Controller
     public function index()
     {
         session()->forget('berhasil');
-        $category = Category::all();
+        if(Auth::user()->role == "kepalatoko"){
+            return redirect()->back();
+        }
+        $category = Category::orderBy('created_at','DESC')->get();
         return view('category.index', ['categories' => $category]);
     }
 
@@ -40,6 +44,7 @@ class CategoryController extends Controller
         
         Category::create([
             'name' => $request->name,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('dashboard-category.index')->with('success', 'Success');
@@ -79,6 +84,7 @@ class CategoryController extends Controller
 
         Category::findOrFail($id)->update([
             'name' => $request->name,
+            'status' => $request->status,
         ]);
 
         return redirect()->route('dashboard-category.index')->with('success', 'Success');

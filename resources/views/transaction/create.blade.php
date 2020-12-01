@@ -1,4 +1,18 @@
 @extends('dashboard.helper')
+@section('css')
+<style>
+  input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+    -moz-appearance:textfield; /* Firefox */
+}
+</style>
+@endsection
 @section('content')
 
 <div class="content-wrapper">
@@ -18,7 +32,7 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item"><a href="#">Transaksi</a></li>
               <li class="breadcrumb-item active">Tambah Transaksi</li>
             </ol>
           </div>
@@ -44,12 +58,13 @@
               <div class="card-body col-md-6">
                 <form method="post" action="{{route('dashboard-transaction.store')}}">
                     @csrf
+                    
                     <div class="form-group">
                     <label>Obat</label>
-                    <select class="form-control " onchange="obat_get()" id="obat_id" name="obat" required>
-                        <option value="">Select Item</option>
+                    <select class="form-control select2" onchange="obat_get()" id="obat_id" name="obat" required>
+                        <option value=""></option>
                     @foreach ($obat as $item)
-                        <option value="{{$item->id}}" >{{$item->name}}</option>
+                        <option value="{{$item->id}}" >{{$item->name}} ({{$item->plu}})</option>
                     @endforeach
                     </select>
                 </div>
@@ -63,8 +78,8 @@
                     
                   </div>
                   <div class="form-group">
-                    <label for="exampleInputPassword1" >Quantity</label>
-                    <input type="number" class="form-control" id="qty"  placeholder="Quantity" required  disabled name="qty" min="0" >
+                    <label for="exampleInputPassword1">Quantity</label>
+                    <input type="number" class="form-control form" id="qty" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10"  placeholder="Quantity" required  disabled name="qty" min="1" >
                     <span class="text-red wrong" hidden>Quantity tidak boleh melebihi Stock</span>
                   </div>
                   <div class="form-group">
@@ -100,6 +115,14 @@
     <script type="text/javascript">
 
         $(document).ready(function(){
+          $('form').on('focus', 'input[type=number]', function (e) {
+            $(this).on('wheel.disableScroll', function (e) {
+              e.preventDefault()
+            })
+          })
+          $('form').on('blur', 'input[type=number]', function (e) {
+            $(this).off('wheel.disableScroll')
+          })
           {{--  total harga barang yang akan dibeli  --}}
           {{--  bind digunakan ketika ingin mengubah data pada qty  --}}
           $('#qty').keyup('input', function(){
@@ -117,6 +140,23 @@
             total = $('#price').val() * $('#qty').val();
             $('#total').val(total);
           });
+          $('.simpan, .draft').one('click', function (event) {
+            console.log($('.form-control').val())
+            if($('.form').val() != ""){
+              toastr.success("Success");
+            }
+            
+          })
+          /// matiin scroll input
+          $('.form').on('focus', 'input[type=number]', function (e) {
+            $(this).on('wheel.disableScroll', function (e) {
+              e.preventDefault()
+            })
+          })
+          $('.form').on('blur', 'input[type=number]', function (e) {
+            $(this).off('wheel.disableScroll')
+          })
+          ///
         });
         function obat_get(){
             var obat_id = $('#obat_id').val();

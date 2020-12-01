@@ -33,7 +33,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <div class="card">
       <div class="card-body login-card-body">
         <p><h3 class="login-box-msg">Log In</h3></p>
-  
+        @if(session('message'))
+        <div class="alert alert-danger">
+            {{session('message')}}
+        </div>
+        @endif
         <form action="{{route('users_login')}}" method="post" autocomplete="off">
           @csrf
           <div class="card-body">

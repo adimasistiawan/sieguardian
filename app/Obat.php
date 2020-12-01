@@ -6,14 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Obat extends Model
 {
-    //mendefinisikan nama tabel
     protected $table= 'obat';
-    //menentukan filed atau data mana saja yang boleh kita insert ke database
-    protected $fillable= ['plu', 'name', 'slug','category','satuan','stock', 'price'];
+    protected $fillable= ['id','plu', 'name','category_id','satuan','stock', 'price','status','empty_date'];
 
     public function category()
     {
-        return $this->belongsTo('App\Category');    
+        return $this->belongsTo('App\Category','category_id','id');    
     }
     public function transaction()
     {

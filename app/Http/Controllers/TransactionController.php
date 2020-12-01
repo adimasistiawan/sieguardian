@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Obat;
 use App\Transaction;
 use DB;
+use Auth;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -21,8 +23,23 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         session()->forget('berhasil');
-        $obat = Obat::all();
-        $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')->select('transaction.*','obat.price','obat.satuan','obat.name as obat_name')->get();
+        // $date = Carbon::createFromFormat('Y-m-d', $request->from);
+        // $daysToAdd = 5;
+        // $date = $date->addDays($daysToAdd);
+        // dd($date);
+        $obat = Obat::where('status','active')->get();
+        if($request->from != null && $request->to != null)
+        {
+            $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')
+                                                    ->join('users','users.id','transaction.user_id')
+                                                   ->select('transaction.*','obat.price','obat.satuan','obat.name as obat_name','users.name as user')
+                                                   ->whereBetween('transaction.date',array($request->from,$request->to))
+                                                   ->orderBy('transaction.created_at','DESC')->get();
+        }
+        else{
+            $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')->join('users','users.id','transaction.user_id')->select('transaction.*','obat.price','obat.satuan','obat.name as obat_name','users.name as user')->orderBy('transaction.created_at','DESC')->get();
+        }
+        
         
         return view('transaction.index', ['obat' => $obat, 'transactions' => $transaction]);
     }
@@ -34,7 +51,7 @@ class TransactionController extends Controller
      */
     public function create()
     {
-        $obat = Obat::where('stock','>',0)->get();
+        $obat = Obat::where('status','active')->get();
         return view('transaction.create',compact('obat'));
     }
 
@@ -52,22 +69,44 @@ class TransactionController extends Controller
 
             case 'approved':
                 $status = "Approved";
-                $obat->update([
-                    'stock' => $obat->stock - $request->qty
+                
+                Transaction::create([
+                    'obat_id' => $request->obat,
+                    'user_id' => Auth::user()->id,
+                    'qty' => $request->qty,
+                    'date' => Carbon::now(),
+                    'total' => $request->total,
+                    'sisa_stock' => $obat->stock - $request->qty,
+                    'status' => $status
                 ]);
+                if($obat->stock - $request->qty == 0){
+                    $obat->update([
+                        'stock' => $obat->stock - $request->qty,
+                        'empty_date' => Carbon::now()
+                    ]);
+                }
+                else{
+                    $obat->update([
+                        'stock' => $obat->stock - $request->qty
+                    ]);
+                }
+                
             break;
         
             case 'draft': 
                 $status = "Draft";
+                Transaction::create([
+                    'obat_id' => $request->obat,
+                    'user_id' => Auth::user()->id,
+                    'qty' => $request->qty,
+                    'date' =>  Carbon::now(),
+                    'total' => $request->total,
+                    'status' => $status
+                ]);
             break;
         }
 
-        Transaction::create([
-            'obat_id' => $request->obat,
-            'qty' => $request->qty,
-            'total' => $request->total,
-            'status' => $status
-        ]);
+        
         
         return redirect()->route('dashboard-transaction.index')->with('success','Success');
     }
@@ -96,7 +135,7 @@ class TransactionController extends Controller
         ->where('transaction.id',$id)
         ->first();
 
-        $obat = Obat::where('stock','>',0)->get();
+        $obat = Obat::where('stock','>',0)->where('status','active')->get();
         return view('transaction.edit',compact('obat','trans'));
     }
 
@@ -115,22 +154,44 @@ class TransactionController extends Controller
 
             case 'approved':
                 $status = "Approved";
-                $obat->update([
-                    'stock' => $obat->stock - $request->qty
+                
+                Transaction::findOrFail($id)->update([
+                    'obat_id' => $request->obat,
+                    'user_id' => Auth::user()->id,
+                    'qty' => $request->qty,
+                    'date' =>  Carbon::now(),
+                    'total' => $request->total,
+                    'sisa_stock' => $obat->stock - $request->qty,
+                    'status' => $status
                 ]);
+                if($obat->stock - $request->qty == 0){
+                    $obat->update([
+                        'stock' => $obat->stock - $request->qty,
+                        'empty_date' => Carbon::now()
+                    ]);
+                }
+                else{
+                    $obat->update([
+                        'stock' => $obat->stock - $request->qty
+                    ]);
+                }
+                
             break;
         
             case 'draft': 
                 $status = "Draft";
+                Transaction::findOrFail($id)->update([
+                    'obat_id' => $request->obat,
+                    'user_id' => Auth::user()->id,
+                    'qty' => $request->qty,
+                    'date' =>  Carbon::now(),
+                    'total' => $request->total,
+                    'status' => $status
+                ]);
             break;
         }
 
-        Transaction::findOrFail($id)->update([
-            'obat_id' => $request->obat,
-            'qty' => $request->qty,
-            'total' => $request->total,
-            'status' => $status
-        ]);
+        
         
         return redirect()->route('dashboard-transaction.index')->with('success','Success');
     }

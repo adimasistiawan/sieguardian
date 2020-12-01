@@ -14,8 +14,6 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="{{asset('dashboard/plugins/fontawesome-free/css/all.min.css')}}">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
   <!-- Tempusdominus Bootstrap 4 -->
   <link rel="stylesheet" href="{{asset('dashboard/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css')}}">
   <!-- iCheck -->
@@ -38,9 +36,131 @@
   <link rel="stylesheet" href="{{asset('dashboard/plugins/toastr/toastr.min.css')}}">
   <!-- Select2 -->
   <script src="{{asset('dashboard/plugins/jquery/jquery.min.js')}}"></script>
+  <style>
+    /* Absolute Center Spinner */
+.loading {
+  position: fixed;
+  z-index: 999;
+  height: 2em;
+  width: 2em;
+  overflow: visible;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+/* Transparent Overlay */
+.loading:before {
+  content: '';
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.3);
+}
+
+/* :not(:required) hides these rules from IE9 and below */
+.loading:not(:required) {
+  /* hide "loading..." text */
+  font: 0/0 a;
+  color: transparent;
+  text-shadow: none;
+  background-color: transparent;
+  border: 0;
+}
+
+.loading:not(:required):after {
+  content: '';
+  display: block;
+  font-size: 10px;
+  width: 1em;
+  height: 1em;
+  margin-top: -0.5em;
+  -webkit-animation: spinner 1500ms infinite linear;
+  -moz-animation: spinner 1500ms infinite linear;
+  -ms-animation: spinner 1500ms infinite linear;
+  -o-animation: spinner 1500ms infinite linear;
+  animation: spinner 1500ms infinite linear;
+  border-radius: 0.5em;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.75) 1.5em 0 0 0, rgba(0, 0, 0, 0.75) 1.1em 1.1em 0 0, rgba(0, 0, 0, 0.75) 0 1.5em 0 0, rgba(0, 0, 0, 0.75) -1.1em 1.1em 0 0, rgba(0, 0, 0, 0.5) -1.5em 0 0 0, rgba(0, 0, 0, 0.5) -1.1em -1.1em 0 0, rgba(0, 0, 0, 0.75) 0 -1.5em 0 0, rgba(0, 0, 0, 0.75) 1.1em -1.1em 0 0;
+  box-shadow: rgba(0, 0, 0, 0.75) 1.5em 0 0 0, rgba(0, 0, 0, 0.75) 1.1em 1.1em 0 0, rgba(0, 0, 0, 0.75) 0 1.5em 0 0, rgba(0, 0, 0, 0.75) -1.1em 1.1em 0 0, rgba(0, 0, 0, 0.75) -1.5em 0 0 0, rgba(0, 0, 0, 0.75) -1.1em -1.1em 0 0, rgba(0, 0, 0, 0.75) 0 -1.5em 0 0, rgba(0, 0, 0, 0.75) 1.1em -1.1em 0 0;
+}
+
+/* Animation */
+
+@-webkit-keyframes spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-moz-keyframes spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes spinner {
+  0% {
+    -webkit-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+  </style>
   @yield('css')
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
+  <div class="loading" hidden>Loading&#8230;</div>
 <div class="wrapper">
 
   <!-- Navbar -->
@@ -72,9 +192,9 @@
         </div>
         <div class="info">
             @if (Auth::user())
-            <a href="{{route('logout')}}" class="d-block">{{Auth::user()->name}}</a>
+            <a href="#" class="d-block">{{Auth::user()->name}}</a>
             @else 
-            <a href="{{route('logout')}}" class="d-block">no access</a>
+            <a href="#" class="d-block">no access</a>
             @endif
         </div>
       </div>
@@ -88,7 +208,7 @@
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
                <li class="nav-item">
-                <a href="{{route('dashboard-transaction.index')}}" class="nav-link">
+                <a href="{{route('dashboard.index')}}" class="nav-link">
                   <i class="nav-icon fas fa-tachometer-alt"></i>
                   <p>
                     Dashboard
@@ -110,18 +230,26 @@
                   <p>Obat</p>
                 </a>
               </li>
+              @if(Auth::user()->role == "apoteker")
               <li class="nav-item">
                 <a href="{{route('dashboard-category.index')}}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>  Kategori</p>
                 </a>
               </li>
+              @endif
               <li class="nav-item">
+                <a href="{{route('kartu.index')}}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Kartu Stock</p>
+                </a>
+              </li>
+              {{-- <li class="nav-item">
                 <a href="{{route('satuan.index')}}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>  Satuan</p>
                 </a>
-              </li>
+              </li> --}}
             </ul>
           </li>
           <li class="nav-item">
@@ -140,6 +268,16 @@
               </p>
             </a>
           </li>
+          @if(Auth::user()->role == "kepalatoko")
+          <li class="nav-item">
+            <a href="{{route('akun-user.index')}}" class="nav-link">
+              <i class="nav-icon fas fa-users"></i>
+              <p>
+                Akun User
+              </p>
+            </a>
+          </li>
+          @endif
           
         </ul>
       </nav>
@@ -181,7 +319,6 @@
   $.widget.bridge('uibutton', $.ui.button)
 </script>
 <!-- Bootstrap 4 -->
-<script src="{{asset('dashboard/plugins/bootstrap/js/bootstrap.bundle.min.js')}}"></script>
 <!-- JQVMap -->
 <script src="{{asset('dashboard/plugins/jqvmap/jquery.vmap.min.js')}}"></script>
 <script src="{{asset('dashboard/plugins/jqvmap/maps/jquery.vmap.usa.js')}}"></script>
@@ -193,7 +330,7 @@
 <!-- Tempusdominus Bootstrap 4 -->
 <script src="{{asset('dashboard/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js')}}"></script>
 <!-- Summernote -->
-<script src="{{asset('dashboard/plugins/summernote/summernote-bs4.min.js')}}"></script>
+
 <!-- overlayScrollbars -->
 <script src="{{asset('dashboard/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js')}}"></script>
 <!-- AdminLTE App -->
@@ -201,7 +338,6 @@
 <!-- AdminLTE for demo purposes -->
 <script src="{{asset('dashboard/dist/js/demo.js')}}"></script>
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="{{asset('dashboard/dist/js/pages/dashboard.js')}}"></script>
 
 
 
@@ -223,7 +359,7 @@
 <script src="{{asset('dashboard/plugins/parsley-js/parsley.js')}}"></script>
 <script src="{{asset('dashboard/plugins/jquery-confirm/js/jquery-confirm.js')}}"></script>
 <!-- dropzonejs -->
-<script src="{{asset('dashboard/plugins/dropzone/min/dropzone.min.js')}}"></script>
+
 <!-- AdminLTE App -->
 <script src="{{asset('dashboard/dist/js/adminlte.min.js')}}"></script>
 
@@ -233,7 +369,13 @@
 <script>
   $(function () {
     //Initialize Select2 Elements
-    $('.select2').select2()
+    $('.select2').select2({
+      placeholder: "Select"
+    })
+    $('.filter').select2({
+      placeholder: "Select",
+      minimumResultsForSearch: -1
+    })
 
     //Initialize Select2 Elements
     $('.select2bs4').select2({
@@ -284,12 +426,26 @@
       "autoWidth": false,
     });
 
+    $(".example2").DataTable({
+      "responsive": true,
+      "autoWidth": false,
+      "searching": false
+    });
+   
     //Bootstrap Duallistbox
     
 
   })
   // BS-Stepper Init
+  function isNumberKey(evt)
+  {
+     var charCode = (evt.which) ? evt.which : event.keyCode
+     if (charCode != 45  && charCode > 31 && (charCode < 48 || charCode > 57))
+        return false;
+      
 
+     return true;
+  }
   // Setup the buttons for all transfers
   // The "add files" button doesn't need to be setup because the config
   // `clickable` has already been specified.

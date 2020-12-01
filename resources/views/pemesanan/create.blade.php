@@ -31,7 +31,7 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item"><a href="#">Pemesanan</a></li>
               <li class="breadcrumb-item active">Buat Pemesanan</li>
             </ol>
           </div>
@@ -59,31 +59,29 @@
                   @csrf
                   <div class="form-group">
                     <label  >No Invoice</label>
-                    <input type="text" class="form-control input" id="no_invoice"  placeholder="No Invoice" required  name="no_invoice" >
+                    <input type="text" class="form-control input" id="no_invoice"  placeholder="No Invoice" maxlength="10" required  name="no_invoice" >
                   </div>
                   <div class="form-group">
-                    <label>Date</label>
+                    <label>Tanggal Pemesanan</label>
                     <input type="date" class="input"  name="date" required>
                   </div> 
-                  <div class="form-group">
+                  {{-- <div class="form-group">
                     <label>Status</label>
                     <select class="form-control input" id="status" name="status" required>
                         <option value="">Select Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Received">Received</option>
                     </select>
-                  </div>
+                  </div> --}}
                    
               </div>
               <div class="col-md-12" style="margin-top:50px;">
-                <button class="btn btn-success tambah-item"><i class="fas fa-plus"></i> Tambah Item</button>
-                <br>
-                <br>
+                
                 <table class="table table-bordered" style="width: 100%">
                   <thead>
                     <th width="80px"></th>
                     <th width="300px">Obat</th>
-                    <th width="200px">Quantity</th>
+                    <th width="200px">Jumlah</th>
                     <th>Keterangan</th>
                   </thead>
                   <tbody id="tbody">
@@ -95,23 +93,32 @@
                         <td>
                           <select class="form-control select2 input-table"  required>
                             <br>
-                            <option value="">Select Item</option>
+                            <option value=""></option>
                             @foreach ($obat as $item)
-                                <option value="{{$item->id}}" >{{$item->name}}</option>
+                                <option value="{{$item->id}}" >{{$item->name}} ({{$item->plu}})</option>
                             @endforeach
                         </select>
                         
                         </td>
                         <td>
-                          <input type="number"  min="0" class="form-control input-table" required>
+                          <input type="number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" min="0" class="form-control input-table" required>
                         </td>
                         <td>
                           <input type="text" class="form-control input-table">
                         </td>
                       </tr>
+                      
                     
                     
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td>
+                        <button class="btn btn-success tambah-item"><i class="fas fa-plus"></i></button>
+                      </td>
+                      
+                    </tr>
+                  </tfoot>
                  
                 </table>
               </div>
@@ -145,29 +152,35 @@
 
         $(document).ready(function(){
           $('.tambah-item').click(function(){
-            $('#tbody').prepend(`
+            $('#tbody').append(`
             <tr class="tr">
                       <td>
-                        <button class="btn btn-danger"><i class="fas fa-trash delete"></i></button>
+                        <button class="btn btn-danger hapus"><i class="fas fa-trash delete"></i></button>
                       </td>
                       <td>
                         <select  class="form-control input-table select2"   required>
-                          <option value="">Select Item</option>
+                          <option value=""></option>
                           @foreach ($obat as $item)
-                              <option value="{{$item->id}}" >{{$item->name}}</option>
+                              <option value="{{$item->id}}" >{{$item->name}} ({{$item->plu}})</option>
                           @endforeach
                       </select>
                         
                       </td>
                       <td>
-                        <input type="number"  min="0" class="form-control input-table" required>
+                        <input type="number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" min="0" class="form-control input-table" required>
                       </td>
                       <td>
                         <input type="text" class="form-control input-table">
                       </td>
                     </tr>
             `)
-            $('.select2').select2()
+            $('.select2').select2({
+              placeholder: "Select"
+            })
+          })
+
+          $(document).on('click', '.hapus', function() {
+            $(this).closest('.tr').remove();
           })
 
           $('.simpan').click(function(){
@@ -206,7 +219,12 @@
             })
             .done(function(response) {
               if(response == 1){
-                
+                toastr.success("Success")
+                url = "{{ route('pemesanan.index')}}";
+                window.location.replace(url);
+              }
+              else if(response == 2){
+                $.alert("No Invoice sudah pernah digunakan");
               }
               else{
                 return;
@@ -221,8 +239,7 @@
                 
                 console.log("complete");
             });
-            url = "{{ route('pemesanan.index')}}";
-                window.location.replace(url);
+            
           })
         });
       </script>

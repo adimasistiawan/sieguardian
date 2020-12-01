@@ -1,4 +1,5 @@
 @extends('dashboard.helper')
+
 @section('content')
 
 <div class="content-wrapper">
@@ -18,7 +19,7 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
+              <li class="breadcrumb-item"><a href="#">Transaksi</a></li>
               <li class="breadcrumb-item active">Edit Transaksi</li>
             </ol>
           </div>
@@ -45,13 +46,17 @@
                 <form method="post" action="{{route('dashboard-transaction.update',$trans->id)}}">
                     @csrf
                     @method('PUT')
+                  <div class="form-group">
+                    <label  >Dibuat Oleh</label>
+                    <h6>{{$trans->users->name}}</h6>
+                  </div>
                     <div class="form-group">
                     <label>Obat</label>
-                    <select class="form-control " onchange="obat_get()" id="obat_id" name="obat" required>
-                        <option value="">Select Item</option>
+                    <select class="form-control select2" onchange="obat_get()" id="obat_id" name="obat" required>
+                        
                     @foreach ($obat as $item)
 
-                        <option value="{{$item->id}}" @if($item->id == $trans->obat_id) selected @endif>{{$item->name}}</option>
+                        <option value="{{$item->id}}" @if($item->id == $trans->obat_id) selected @endif>{{$item->name}} ({{$item->plu}})</option>
                     @endforeach
                     </select>
                 </div>
@@ -66,7 +71,7 @@
                   </div>
                   <div class="form-group">
                     <label for="exampleInputPassword1" >Quantity</label>
-                    <input type="number" class="form-control" id="qty"  placeholder="Quantity" required value="{{$trans->qty}}"  name="qty" min="0" >
+                    <input type="number" class="form-control" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" id="qty"  placeholder="Quantity" required value="{{$trans->qty}}"  name="qty" min="1" >
                     <span class="text-red wrong" hidden>Quantity tidak boleh melebihi Stock</span>
                   </div>
                   <div class="form-group">
@@ -103,6 +108,14 @@
     <script type="text/javascript">
 
         $(document).ready(function(){
+          $('form').on('focus', 'input[type=number]', function (e) {
+              $(this).on('wheel.disableScroll', function (e) {
+                e.preventDefault()
+              })
+            })
+            $('form').on('blur', 'input[type=number]', function (e) {
+              $(this).off('wheel.disableScroll')
+            })
             $('#total').val(parseInt($('#price').val()) *parseInt($('#qty').val()))
             if(parseInt($('#stock').val()) == 0){
                 console.log($('#stock').val())
@@ -123,7 +136,9 @@
               $('.simpan').prop('disabled', true);
               $('.draft').prop('disabled', true);
             }
-            
+          $('.simpan, .draft').click(function(){
+            toastr.success("Success");
+          })
           {{--  total harga barang yang akan dibeli  --}}
           {{--  bind digunakan ketika ingin mengubah data pada qty  --}}
           $('#qty').keyup('input', function(){

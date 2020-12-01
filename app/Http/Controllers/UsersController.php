@@ -25,7 +25,7 @@ class UsersController extends Controller
         if(Auth::attempt(['username' => $request->username, 'password' =>$request->password])){
             return redirect()->route('dashboard.index');
         }else{
-            return redirect('/');
+            return redirect()->back()->with('message','Username atau Password salah');
         }
     }
     public function logout()

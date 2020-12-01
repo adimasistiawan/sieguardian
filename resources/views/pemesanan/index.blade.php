@@ -30,8 +30,8 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Pemesanan</li>
+              <li class="breadcrumb-item"><a href="#">Pemesanan</a></li>
+              
             </ol>
           </div>
           
@@ -50,12 +50,14 @@
               <div class="card-header"  >
                   <div class="row">
                     <div class="col-md-5">
+                      @if(Auth::user()->role == "apoteker")
                       <a class="btn btn-primary" href="{{route('pemesanan.create')}}">
                         <i class="fas fa-edit btn-xs" ></i> Buat Pemesanan
                       </a>
+                      @endif
+                      &nbsp;
                     </div>
-                    <div class="col-md-7">
-                      Periode
+                    <div class="col-md-7 pull-right" style="float: right">
                       <form action="{{route('pemesanan.index')}}" method="GET">
                         <div class="input-group">
                         
@@ -79,7 +81,9 @@
                   <thead>
                     <tr>
                       <th>No</th>
-                      <th>Date</th>
+                      <th>Dibuat Oleh</th>
+                      <th>Tanggal Pemesanan</th>
+                      <th>Tanggal Diterima</th>
                       <th>No Invoice</th>
                       <th>Status</th>
                       <th>Action</th>
@@ -90,14 +94,26 @@
                     @foreach ($data as $pemesanan)
                         <tr>
                           <td>{{$no}}</td>
-                          <td>{{date('d-m-Y', strtotime($pemesanan->created_at))}}</td>
-                          <td>{{$pemesanan->no_invoice}}</td>
+                          <td>{{$pemesanan->users->name}}</td>
+                          <td>{{date('d-m-Y', strtotime($pemesanan->date))}}</td>
                           <td>
-                            @if($pemesanan->status == "Received")
-                              <span class="badge badge-pill badge-primary">
-                                Received
-                              </span>
+                            @if($pemesanan->status == "Approved")
+                            {{date('d-m-Y', strtotime($pemesanan->receive_date))}}
 
+                            @else
+                            -
+                            @endif
+                          </td>
+                          <td class="text-right">{{$pemesanan->no_invoice}}</td>
+                          <td>
+                            @if($pemesanan->status == "Rejected")
+                              <span class="badge badge-pill badge-danger">
+                                Rejected
+                              </span>
+                            @elseif($pemesanan->status == "Approved")
+                              <span class="badge badge-pill badge-primary">
+                                Approved
+                              </span>
                             @else
                             <span class="badge badge-pill badge-warning">
                               Pending
@@ -106,18 +122,23 @@
                           </td>
                           <td>
                             <div class="btn-group">
-                              @if($pemesanan->status == "Pending")
-                                <form action="{{route('pemesanan.destroy', $pemesanan->id)}}" method="post">
-                                    @csrf
-                                    @method('delete')
-                                  <a class="btn btn-warning" href="{{route('pemesanan.edit', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Edit</a>
-                                  <button type="submit" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" class="btn btn-danger" style="margin: 2px; border-radius: 0;">Delete</button>
-                                </form>
-
+                              @if(Auth::user()->role == "apoteker")
+                                @if($pemesanan->status == "Pending" || $pemesanan->status == "Rejected")
+                                  <form action="{{route('pemesanan.destroy', $pemesanan->id)}}" method="post">
+                                      @csrf
+                                      @method('delete')
+                                    <a class="btn btn-warning" href="{{route('pemesanan.edit', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Edit</a>
+                                    
+                                    <button type="submit" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" class="btn btn-danger" style="margin: 2px; border-radius: 0;">Delete</button>
+                                  </form>
+                                @else
+                                  <a class="btn btn-primary" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Show</a>
+                                @endif
                               @else
-                              <a class="btn btn-primary" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Show</a>
+                                  <a class="btn btn-primary" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Show</a>
                               @endif
-
+                              
+                              <a href="{{route('pemesanan.pdf',$pemesanan->id)}}" class="btn btn-success"  style="margin: 2px; border-radius: 0;" target="blank"><i class="fas fa-download"></i> PDF</a>
                           </div>
                           </td>
                         </tr>
@@ -143,10 +164,7 @@
 
   <script>
     $(document).ready(function(){
-         @if(session()->has('berhasil'))
-              toastr.success("{{session('berhasil')}}")
-              
-         @endif
+         
          $('input').val(new Date().toDateInputValue());
          
       })

@@ -9,7 +9,7 @@ class Category extends Model
     //mendefinisikan nama tabel
     protected $table= 'category';
     //menentukan filed atau data mana saja yang boleh kita insert ke database
-    protected $fillable= ['name'];
+    protected $fillable= ['name','status'];
 
     public function obat()
     {

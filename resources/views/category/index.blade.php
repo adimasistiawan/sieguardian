@@ -11,8 +11,7 @@
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Kategori</li>
+              <li class="breadcrumb-item"><a href="#">Kategori</a></li>
             </ol>
           </div>
         </div>
@@ -37,6 +36,7 @@
                     <tr>
                       <th style="width: 10px">No</th>
                       <th>Name</th>
+                      <th>Status</th>
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -47,12 +47,23 @@
                         <td>{{$no}}</td>
                         <td>{{$category->name}}</td>
                         <td>
+                          @if($category->status == "active")
+                              <span class="badge badge-pill badge-primary">
+                                Active
+                              </span>
+                            @else
+                            <span class="badge badge-pill badge-danger">
+                              Non Active
+                            </span>
+                            @endif
+                        </td>
+                        <td>
                           <div class="btn-group">
                               <form action="{{route('dashboard-category.destroy', $category->id)}}" method="post">
                                   @csrf
                                   @method('delete')
                                 <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal-default{{$category->id}}" style="margin: 2px; border-radius: 0;" >Edit</button>
-                                <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" style="margin: 2px; border-radius: 0;">Delete</button>
+                                
                               </form>
                           </div>
                         </td>
@@ -89,6 +100,13 @@
                   <label for="exampleInputEmail1">Name</label>
                   <input type="text" class="form-control" placeholder="Name" name="name" required>
                 </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select class="form-control" style="width: 100%;" name="status" required >
+                    <option value="active">Active</option>
+                    <option value="nonactive">Non Active</option>
+                  </select>
+              </div>
               </div>
               <!-- /.card-body -->
 
@@ -120,6 +138,13 @@
                   <label for="exampleInputEmail1">Name</label>
                   <input type="text" class="form-control" placeholder="Enter Name" value="{{$category->name}}" name="name" required>
                 </div>
+                <div class="form-group">
+                  <label>Status</label>
+                  <select class="form-control" style="width: 100%;" name="status" required >
+                    <option value="active"  @if("active" == $category->status) selected @endif>Active</option>
+                    <option value="nonactive"  @if("nonactive" == $category->status) selected @endif>Non Active</option>
+                  </select>
+              </div>
               </div>
               <!-- /.card-body -->
 
