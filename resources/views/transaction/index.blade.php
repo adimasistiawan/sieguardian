@@ -7,11 +7,11 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Transaksi</h1>
+            <h1>Transaksi Penjualan</h1>
           </div>
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Transaksi</a></li>
+              <li class="breadcrumb-item"><a href="#">Transaksi Penjualan</a></li>
               
             </ol>
           </div>
@@ -63,14 +63,10 @@
                       <th>No</th>
                       <th>Tanggal</th>
                       <th>Dibuat Oleh</th>
-                      <th>Item</th>
-                      <th>Qty</th>
-                      <th>Price (Rp)</th>
+                      <th>No Transaksi</th>
                       <th>Total (Rp)</th>
                       <th>Status</th>
-                      @if(Auth::user()->role == "apoteker")
                       <th>Action</th>
-                      @endif
                     </tr>
                   </thead>
                   <tbody>
@@ -80,9 +76,7 @@
                           <td>{{$no}}</td>
                           <td>{{date('d-m-Y', strtotime($transaction->date))}}</td>
                           <td>{{$transaction->user}}</td>
-                          <td>{{$transaction->obat_name}}</td>
-                          <td class="text-right">{{$transaction->qty}}</td>
-                          <td class="text-right">{{rupiah($transaction->price)}}</td>
+                          <td class="text-center">{{$transaction->no_transaction}}</td>
                           <td class="text-right">{{rupiah($transaction->total)}}</td>
                           <td>
                             @if($transaction->status == "Approved")
@@ -96,20 +90,24 @@
                             </span>
                             @endif
                           </td>
-                          @if(Auth::user()->role == "apoteker")
+                          
                           <td>
                             <div class="btn-group">
                               @if($transaction->status == "Draft")
+                              
+                                @if(Auth::user()->role == "apoteker")
                                 <form action="{{route('dashboard-transaction.destroy', $transaction->id)}}" method="post">
                                     @csrf
                                     @method('delete')
                                   <a class="btn btn-warning" href="{{route('dashboard-transaction.edit', $transaction->id)}}" style="margin: 2px; border-radius: 0;" >Edit</a>
                                   <button type="submit" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" class="btn btn-danger" style="margin: 2px; border-radius: 0;">Delete</button>
                                 </form>
+                                @endif
+                              @elseif($transaction->status == "Approved")
+                                <a class="btn btn-primary" href="{{route('dashboard-transaction.show', $transaction->id)}}" style="margin: 2px; border-radius: 0;" >Show</a>
                               @endif
                           </div>
                           </td>
-                          @endif
                         </tr>
                         <?php $no++ ?>
                     @endforeach

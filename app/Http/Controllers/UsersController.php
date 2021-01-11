@@ -22,9 +22,13 @@ class UsersController extends Controller
             'password' => 'required'
         ]);
 
-        if(Auth::attempt(['username' => $request->username, 'password' =>$request->password])){
+        if(Auth::attempt(['username' => $request->username, 'password' =>$request->password, 'status' => 'active'])){
             return redirect()->route('dashboard.index');
-        }else{
+        }
+        else if(Auth::attempt(['username' => $request->username, 'password' =>$request->password, 'status' => 'nonactive'])){
+            return redirect()->back()->with('message','Akun tidak aktif');
+        }
+        else{
             return redirect()->back()->with('message','Username atau Password salah');
         }
     }

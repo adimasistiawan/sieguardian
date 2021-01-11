@@ -9,8 +9,19 @@
   <!-- Select2 -->
   {{-- <script src="{{asset('dashboard/plugins/jquery/jquery.min.js')}}"></script> --}}
     <style>
+
+    @font-face {
+      font-family: 'CustomFont';
+      src: url('{{asset("Calibri Regular.ttf")}}')  format('truetype')
+    }
+    @font-face {
+      font-family: 'CustomFontBold';
+      src: url('{{asset("Calibri Bold.ttf")}}')  format('truetype')
+    }
+
     *{
       font-size:13px;
+      font-family: 'CustomFont';
     }
     .select2-container--default .select2-selection--single {
             width: 244.167px;
@@ -43,19 +54,23 @@
         .tr{
           border:1px solid #000000;
         }
+
+        body {
+            font-family: 'CustomFont';
+        }
     </style>
 </head>
 <body>
     
-      <div style="text-align: center;">
+      <div style="text-align: center; ">
         
-        <span style="color: #3c8dbc; font-weight:600">APOTEK GUARDIAN BALI SOYA SANUR</span><br>
+        <span style="color: #3c8dbc; font-family: 'CustomFontBold';">APOTEK GUARDIAN BALI SOYA SANUR</span><br>
         <span style="color: #3c8dbc;">Jl. Danau Tamblingan no.47</span><br>
         <span style="color: #3c8dbc;">Telp : 0361-8497838</span><br>
         <span style="color: #3c8dbc;">Email : bssanur@hero.co.id</span><br>
         <hr style="border: 2px solid #0778b9;"><br>
 
-        <u><span style="font-weight:600; font-size:19px;">SURAT PESANAN OBAT</span></u><br>
+        <u><span style=" font-size:19px; font-family: 'CustomFontBold';">SURAT PESANAN OBAT</span></u><br>
         <span >No SP : 051/VII/2019/BSS/6510</span><br>
       </div>
       <br>
@@ -101,7 +116,7 @@
         </tr>
         <tr>
           <td>Telp</td>
-          <td>: : 031-99711877</td>
+          <td>: 031-99711877</td>
         </tr>
         <tr>
           <td></td>
@@ -109,13 +124,14 @@
         </tr>
         
       </table>
+      <br>
       <table  class="table"style="width: 80%; border:1px solid #000000;">
         <tr class="tr">
-          <th class="th" width="50px" style="text-align: center;">No</th>
-          <th class="th" width="200px" style="text-align: center;">Obat</th>
-          <th class="th" width="100px" style="text-align: center;">Satuan</th>
-          <th class="th" width="50px" style="text-align: center;">Jumlah</th>
-          <th class="th" style="text-align: center;" width="50px">Keterangan</th>
+          <td class="th" width="50px" style="text-align: center; font-family: 'CustomFontBold';">No</td>
+          <td class="th" width="200px" style="text-align: center; font-family: 'CustomFontBold';">Obat</td>
+          <td class="th" width="100px" style="text-align: center; font-family: 'CustomFontBold';">Satuan</td>
+          <td class="th" width="50px" style="text-align: center; font-family: 'CustomFontBold';">Jumlah</td>
+          <td class="th" style="text-align: center; font-family: 'CustomFontBold';" width="100px">Keterangan</td>
         </tr>
           <?php $no = 1?>
           

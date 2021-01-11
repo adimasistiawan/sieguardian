@@ -101,7 +101,7 @@
                         
                         </td>
                         <td>
-                          <input type="number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" min="0" class="form-control input-table" required>
+                          <input type="number" oninput="this.value = !!this.value && Math.abs(this.value) >= 0 ? Math.abs(this.value) : null" maxlength = "10" min="0" class="form-control input-table" required>
                         </td>
                         <td>
                           <input type="text" class="form-control input-table">
@@ -122,12 +122,12 @@
                  
                 </table>
               </div>
+            </div>
+            <div class="card-footer">
+              <button type="submit" class="btn btn-primary simpan" name="submit" value="approved">Simpan</button>
+            </div>
             
-              <div class="card-footer">
-                <button type="submit" class="btn btn-primary simpan" name="submit" value="approved">Simpan</button>
-              </div>
-            
-                </div>
+                
                 
             </div>
             <!-- /.card -->
@@ -167,7 +167,7 @@
                         
                       </td>
                       <td>
-                        <input type="number" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" min="0" class="form-control input-table" required>
+                        <input type="number" oninput="this.value = !!this.value && Math.abs(this.value) >= 0 ? Math.abs(this.value) : null" maxlength = "10" min="0" class="form-control input-table" required>
                       </td>
                       <td>
                         <input type="text" class="form-control input-table">

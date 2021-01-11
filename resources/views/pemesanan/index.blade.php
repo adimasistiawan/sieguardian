@@ -104,7 +104,7 @@
                             -
                             @endif
                           </td>
-                          <td class="text-right">{{$pemesanan->no_invoice}}</td>
+                          <td class="text-center">{{$pemesanan->no_invoice}}</td>
                           <td>
                             @if($pemesanan->status == "Rejected")
                               <span class="badge badge-pill badge-danger">
@@ -123,14 +123,15 @@
                           <td>
                             <div class="btn-group">
                               @if(Auth::user()->role == "apoteker")
-                                @if($pemesanan->status == "Pending" || $pemesanan->status == "Rejected")
+                                @if($pemesanan->status == "Pending")
                                   <form action="{{route('pemesanan.destroy', $pemesanan->id)}}" method="post">
                                       @csrf
                                       @method('delete')
                                     <a class="btn btn-warning" href="{{route('pemesanan.edit', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Edit</a>
                                     
-                                    <button type="submit" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" class="btn btn-danger" style="margin: 2px; border-radius: 0;">Delete</button>
+                                    {{-- <button type="submit" onclick="return confirm('Apakah kamu yakin ingin menghapus data?')" class="btn btn-danger" style="margin: 2px; border-radius: 0;">Delete</button> --}}
                                   </form>
+                                
                                 @else
                                   <a class="btn btn-primary" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" >Show</a>
                                 @endif

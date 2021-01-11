@@ -27,6 +27,7 @@
             <div class="card">
               <div class="card-body">
                 <h3>Selamat Datang</h3>
+                @csrf
               </div>
             </div>
           </div>
@@ -38,7 +39,7 @@
                   
                     <div class="row">
                       <div class="col-md-3">
-                        @csrf
+                        
                         <div class="form-group">
                           <label for="">Periode</label>
                           <select name="filter" id="Filter" class="filter form-control" >
@@ -203,13 +204,8 @@
                           </td>
                           <td>
                             <div class="btn-group">
-                              
-                                @if($pemesanan->status == "Rejected")
-                                  
-                                    <a class="btn btn-warning" href="{{route('pemesanan.edit', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" ><i class="fas fa-search"></i></a>
-                                @else
-                                  <a class="btn btn-warning" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" ><i class="fas fa-search"></i></a>
-                                @endif
+                              <a class="btn btn-warning" href="{{route('pemesanan.show', $pemesanan->id)}}" style="margin: 2px; border-radius: 0;" ><i class="fas fa-search"></i></a>
+                               
                             </div>
                           </td>
                         </tr>

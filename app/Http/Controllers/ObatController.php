@@ -45,11 +45,13 @@ class ObatController extends Controller
     public function store(Request $request)
     {
         $check = Obat::where('plu', $request->plu)->get();
-        
+        $check2 = Obat::where('name', $request->name)->get();
         if(count($check) > 0){
             return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. PLU sudah pernah digunakan ');;
         }
-
+        if(count($check2) > 0){
+            return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. Nama obat sudah pernah digunakan ');;
+        }
         Obat::create([
             'plu' => $request->plu,
             'name' => $request->name,
@@ -96,9 +98,12 @@ class ObatController extends Controller
     {
         $obat = Obat::find($id);
         $check = Obat::where('plu', $request->plu)->where('plu','!=',$obat->plu)->get();
-        
+        $check2 = Obat::where('name', $request->name)->where('name','!=',$obat->name)->get();
         if(count($check) > 0){
             return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. PLU sudah pernah digunakan ');;
+        }
+        if(count($check2) > 0){
+            return redirect()->route('dashboard-obat.index')->with('error', 'Gagal. Nama obat sudah pernah digunakan ');;
         }
         Obat::findOrFail($id)->update([
             'plu' => $request->plu,

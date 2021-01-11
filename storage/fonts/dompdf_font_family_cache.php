@@ -96,4 +96,10 @@
   'summernote' => array(
     'normal' => $fontDir . '/summernote-normal_dce1319a82311fea215c1625be8c7494',
   ),
+  'customfont' => array(
+    'normal' => $fontDir . '/customfont-normal_e943a0109a610f88dadc0ff129c52b03',
+  ),
+  'customfontbold' => array(
+    'normal' => $fontDir . '/customfontbold-normal_f796e4523c2972768dadb00635ed091c',
+  ),
 ) ?>

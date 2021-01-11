@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Obat;
 use App\Transaction;
+use App\TransactionDetail;
+use App\KartuStok;
 use DB;
 use Auth;
 use Carbon\Carbon;
@@ -30,14 +32,13 @@ class TransactionController extends Controller
         $obat = Obat::where('status','active')->get();
         if($request->from != null && $request->to != null)
         {
-            $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')
-                                                    ->join('users','users.id','transaction.user_id')
-                                                   ->select('transaction.*','obat.price','obat.satuan','obat.name as obat_name','users.name as user')
+            $transaction = DB::table('transaction')->join('users','users.id','transaction.user_id')
+                                                   ->select('transaction.*','users.name as user')
                                                    ->whereBetween('transaction.date',array($request->from,$request->to))
                                                    ->orderBy('transaction.created_at','DESC')->get();
         }
         else{
-            $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')->join('users','users.id','transaction.user_id')->select('transaction.*','obat.price','obat.satuan','obat.name as obat_name','users.name as user')->orderBy('transaction.created_at','DESC')->get();
+            $transaction = DB::table('transaction')->join('users','users.id','transaction.user_id')->select('transaction.*','users.name as user')->orderBy('transaction.created_at','DESC')->get();
         }
         
         
@@ -63,52 +64,104 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        $obat = Obat::findOrFail($request->obat);
+        $check = Transaction::where('no_transaction', $request->no_transaction)->get();
+        if(count($check) > 0){
+            return 2;
+        }
+        
         $status = "";
-        switch($request->submit) {
+        switch($request->save) {
 
-            case 'approved':
+            case 1:
                 $status = "Approved";
-                
-                Transaction::create([
-                    'obat_id' => $request->obat,
+                $total = 0;
+                foreach($request->item as $value){
+                    $total += $value['total'];
+                }
+                $transaction = Transaction::create([
+                    'no_transaction' => $request->no_transaction,
                     'user_id' => Auth::user()->id,
-                    'qty' => $request->qty,
                     'date' => Carbon::now(),
-                    'total' => $request->total,
-                    'sisa_stock' => $obat->stock - $request->qty,
+                    'total' => $total,
                     'status' => $status
                 ]);
-                if($obat->stock - $request->qty == 0){
-                    $obat->update([
-                        'stock' => $obat->stock - $request->qty,
-                        'empty_date' => Carbon::now()
+                foreach($request->item as $value){
+                    
+                    $obat = Obat::findOrFail($value['obat']);
+                    TransactionDetail::create([
+                        'transaction_id' => $transaction->id,
+                        'obat_id' => $value['obat'],
+                        'price' => $value['price'],
+                        'qty' => $value['qty'],
+                        'sub_total' => $value['total'],
                     ]);
+                    
+                    $kartu = KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->get();
+                    if(count($kartu) == 0){
+                        KartuStok::create([
+                            'date' => Carbon::now(),
+                            'obat_id' => $value['obat'],
+                            'stock_awal' => $obat->stock,
+                            'masuk' => 0,
+                            'keluar' => $value['qty'],
+                            'sisa' => $obat->stock - $value['qty']
+                        ]);
+                    }else{
+                        $keluar = KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->first();
+                        KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->update([
+                            'keluar' => $keluar->keluar + $value['qty'],
+                            'sisa' => $obat->stock - $value['qty']
+                        ]);
+                    }
+                    
+                    if($obat->stock - $value['qty'] == 0){
+                        $obat->update([
+                            'stock' => $obat->stock - $value['qty'],
+                            'empty_date' => Carbon::now()
+                        ]);
+                    }
+                    else{
+                        $obat->update([
+                            'stock' => $obat->stock - $value['qty']
+                        ]);
+                    }
                 }
-                else{
-                    $obat->update([
-                        'stock' => $obat->stock - $request->qty
-                    ]);
-                }
+                
+                
                 
             break;
         
-            case 'draft': 
+            case 0: 
                 $status = "Draft";
-                Transaction::create([
-                    'obat_id' => $request->obat,
+                $total = 0;
+                foreach($request->item as $value){
+                    $total += $value['total'];
+                }
+                $transaction = Transaction::create([
+                    'no_transaction' => $request->no_transaction,
                     'user_id' => Auth::user()->id,
-                    'qty' => $request->qty,
-                    'date' =>  Carbon::now(),
-                    'total' => $request->total,
+                    'date' => Carbon::now(),
+                    'total' => $total,
                     'status' => $status
                 ]);
+                foreach($request->item as $value){
+                    TransactionDetail::create([
+                        'transaction_id' => $transaction->id,
+                        'obat_id' => $value['obat'],
+                        'price' => $value['price'],
+                        'qty' => $value['qty'],
+                        'sub_total' => $value['total']
+                    ]);
+                    
+                }
+                
+                
             break;
         }
 
         
         
-        return redirect()->route('dashboard-transaction.index')->with('success','Success');
+        return 1;
     }
 
     /**
@@ -119,7 +172,12 @@ class TransactionController extends Controller
      */
     public function show($id)
     {
-        //
+        $transaction = Transaction::where('id',$id)->with('users')->first();
+        $transaction_detail = DB::table('transaction_detail')->join('obat','transaction_detail.obat_id','obat.id')
+                                                         ->select('transaction_detail.qty','transaction_detail.sub_total','transaction_detail.price','obat.name')
+                                                         ->where('obat.status','active')
+                                                         ->where('transaction_detail.transaction_id',$transaction->id)->get();
+        return view('transaction.show',compact('transaction','transaction_detail'));
     }
 
     /**
@@ -130,13 +188,16 @@ class TransactionController extends Controller
      */
     public function edit($id)
     {
-        $trans = $transaction = DB::table('transaction')->join('obat','obat.id','transaction.obat_id')
-        ->select('transaction.*','obat.price','obat.stock','obat.name as obat_name','obat.id as obat_id')
-        ->where('transaction.id',$id)
-        ->first();
+        
+        $trans = Transaction::find($id);
+        $trans_detail = DB::table('transaction_detail')->join('obat','obat.id','transaction_detail.obat_id')
+        ->select('transaction_detail.*','obat.price','obat.stock','obat.name as obat_name','obat.id as obat_id')
+        ->where('transaction_detail.transaction_id',$trans->id)
+        ->where('obat.status','active')
+        ->get();
 
-        $obat = Obat::where('stock','>',0)->where('status','active')->get();
-        return view('transaction.edit',compact('obat','trans'));
+        $obat = Obat::where('status','active')->get();
+        return view('transaction.edit',compact('obat','trans','trans_detail'));
     }
 
     /**
@@ -148,52 +209,100 @@ class TransactionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $obat = Obat::findOrFail($request->obat);
+        $transaction = Transaction::findOrFail($id);
+        $check = Transaction::where('no_transaction', $request->no_transaction)->where('no_transaction','!=', $transaction->no_transaction)->get();
+        if(count($check) > 0){
+            return 2;
+        }
+        
         $status = "";
-        switch($request->submit) {
+        switch($request->save) {
 
-            case 'approved':
+            case 1:
                 $status = "Approved";
-                
-                Transaction::findOrFail($id)->update([
-                    'obat_id' => $request->obat,
+                $total = 0;
+                foreach($request->item as $value){
+                    $total += $value['total'];
+                }
+                $transaction->update([
+                    'no_transaction' => $request->no_transaction,
                     'user_id' => Auth::user()->id,
-                    'qty' => $request->qty,
-                    'date' =>  Carbon::now(),
-                    'total' => $request->total,
-                    'sisa_stock' => $obat->stock - $request->qty,
+                    'date' => Carbon::now(),
+                    'total' => $total,
                     'status' => $status
                 ]);
-                if($obat->stock - $request->qty == 0){
-                    $obat->update([
-                        'stock' => $obat->stock - $request->qty,
-                        'empty_date' => Carbon::now()
+                TransactionDetail::where('transaction_id',$id)->delete();
+                foreach($request->item as $value){
+                    $obat = Obat::findOrFail($value['obat']);
+                    TransactionDetail::create([
+                        'transaction_id' => $transaction->id,
+                        'obat_id' => $value['obat'],
+                        'price' => $value['price'],
+                        'qty' => $value['qty'],
+                        'sub_total' => $value['total'],
                     ]);
-                }
-                else{
-                    $obat->update([
-                        'stock' => $obat->stock - $request->qty
-                    ]);
+
+                    $kartu = KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->get();
+                    if(count($kartu) == 0){
+                        KartuStok::create([
+                            'date' => Carbon::now(),
+                            'obat_id' => $value['obat'],
+                            'stock_awal' => $obat->stock,
+                            'masuk' => 0,
+                            'keluar' => $value['qty'],
+                            'sisa' => $obat->stock - $value['qty']
+                        ]);
+                    }else{
+                        $keluar = KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->first();
+                        KartuStok::where('obat_id',$value['obat'])->whereDate('date',Carbon::now())->update([
+                            'keluar' => $keluar->keluar + $value['qty'],
+                            'sisa' => $obat->stock - $value['qty']
+                        ]);
+                    }
+
+                
+                    if($obat->stock - $value['qty'] == 0){
+                        $obat->update([
+                            'stock' => $obat->stock - $value['qty'],
+                            'empty_date' => Carbon::now()
+                        ]);
+                    }
+                    else{
+                        $obat->update([
+                            'stock' => $obat->stock - $value['qty']
+                        ]);
+                    }
                 }
                 
             break;
         
-            case 'draft': 
+            case 0: 
                 $status = "Draft";
-                Transaction::findOrFail($id)->update([
-                    'obat_id' => $request->obat,
+                $total = 0;
+                foreach($request->item as $value){
+                    $total += $value['total'];
+                }
+                $transaction->update([
+                    'no_transaction' => $request->no_transaction,
                     'user_id' => Auth::user()->id,
-                    'qty' => $request->qty,
-                    'date' =>  Carbon::now(),
-                    'total' => $request->total,
+                    'date' => Carbon::now(),
+                    'total' => $total,
                     'status' => $status
                 ]);
+                TransactionDetail::where('transaction_id',$id)->delete();
+                foreach($request->item as $value){
+                    TransactionDetail::create([
+                        'transaction_id' => $transaction->id,
+                        'obat_id' => $value['obat'],
+                        'price' => $value['price'],
+                        'qty' => $value['qty'],
+                        'sub_total' => $value['total']
+                    ]);
+                }
             break;
         }
-
         
-        
-        return redirect()->route('dashboard-transaction.index')->with('success','Success');
+        return 1;
     }
 
     /**

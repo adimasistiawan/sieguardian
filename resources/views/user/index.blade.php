@@ -204,7 +204,9 @@
             toastr.success("{{session('success')}}")
             
        @endif
-   
+       @if(session()->has('error'))
+        $.alert("{{session('error')}}")
+       @endif
     
         $('.change_password').click(function(){
             $('.formpassword').append(`

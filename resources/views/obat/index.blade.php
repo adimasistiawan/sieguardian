@@ -30,7 +30,7 @@
               <div class="card-header"  >
                 
                 <button class="btn btn-primary"  data-toggle="modal" data-target="#modal-default" >
-                  <i class="fas fa-edit btn-xs" ></i> Tambah Data
+                  <i class="fa fa-plus btn-xs" ></i> Tambah Data
                 </button>
               </div>
               @endif
@@ -228,7 +228,7 @@
               </div>
                 <div class="form-group">
                     <label for="exampleInputEmail1">Stock</label>
-                    <input type="number" class="form-control" placeholder="Stock" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" value="{{$item->stock}}" name="stock" required>
+                    <input type="number" class="form-control" placeholder="Stock" oninput="javascript: if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength);" maxlength = "10" value="{{$item->stock}}" name="stock" disabled required>
                 </div>
                 <div class="form-group">
                     <label for="exampleInputEmail1">Price </label>

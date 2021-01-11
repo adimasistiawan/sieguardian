@@ -103,6 +103,7 @@
                             <thead>
                                 <tr>
                                   <th class="text-center" style="width:180px">Tanggal</th>
+                                  <th class="text-center" style="width:120px">Stock Awal</th>
                                   <th class="text-center" style="width:120px">Masuk</th>
                                   <th class="text-center" style="width:120px">Keluar</th>
                                   <th class="text-center" style="width:120px">Sisa</th>
@@ -186,6 +187,7 @@
               $('.tbody').append(`
               <tr>
                   <td class="text-center">`+$.datepicker.formatDate( "dd/mm/yy", new Date(value['date']))+`</td>
+                  <td class="text-right">`+value['stock_awal']+`</td>
                   <td class="text-right">`+value['masuk']+`</td>
                   <td  class="text-right">`+value['keluar']+`</td>
                   <td  class="text-right">`+value['sisa']+`</td>

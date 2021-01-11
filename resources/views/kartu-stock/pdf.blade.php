@@ -9,8 +9,18 @@
   <!-- Select2 -->
   {{-- <script src="{{asset('dashboard/plugins/jquery/jquery.min.js')}}"></script> --}}
     <style>
+     @font-face {
+      font-family: 'CustomFont';
+      src: url('{{asset("Calibri Regular.ttf")}}')  format('truetype')
+    }
+    @font-face {
+      font-family: 'CustomFontBold';
+      src: url('{{asset("Calibri Bold.ttf")}}')  format('truetype')
+    }
+
     *{
       font-size:13px;
+      font-family: 'CustomFont';
     }
     .select2-container--default .select2-selection--single {
             width: 244.167px;
@@ -49,13 +59,13 @@
     
       <div style="text-align: center;">
         
-        <span style="color: #3c8dbc; font-weight:600">APOTEK GUARDIAN BALI SOYA SANUR</span><br>
+        <span style="color: #3c8dbc; font-family: 'CustomFontBold';">APOTEK GUARDIAN BALI SOYA SANUR</span><br>
         <span style="color: #3c8dbc;">Jl. Danau Tamblingan no.47</span><br>
         <span style="color: #3c8dbc;">Telp : 0361-8497838</span><br>
         <span style="color: #3c8dbc;">Email : bssanur@hero.co.id</span><br>
         <hr style="border: 2px solid #0778b9;"><br>
 
-        <u><span style="font-weight:600; font-size:19px;">Kartu Stock</span></u><br>
+        <u><span style="font-size:19px; font-family: 'CustomFontBold';">Kartu Stock</span></u><br>
         
       </div>
       <br>
@@ -87,11 +97,12 @@
       </table>
       <table  class="table"style="width: 80%; border:1px solid #000000;">
         <tr class="tr">
-          <th class="th" width="50px" style="text-align: center;">No</th>
-          <th class="th" width="200px" style="text-align: center;">Tanggal</th>
-          <th class="th" width="100px" style="text-align: center;">Masuk</th>
-          <th class="th" width="100px" style="text-align: center;">Keluar</th>
-          <th class="th" style="text-align: center;" width="100px">Sisa</th>
+          <td class="th" width="50px" style="text-align: center; font-family: 'CustomFontBold';">No</td>
+          <td class="th" width="200px" style="text-align: center; font-family: 'CustomFontBold';">Tanggal</td>
+          <td class="th" width="100px" style="text-align: center; font-family: 'CustomFontBold';">Stock Awal</td>
+          <td class="th" width="100px" style="text-align: center; font-family: 'CustomFontBold';">Masuk</td>
+          <td class="th" width="100px" style="text-align: center; font-family: 'CustomFontBold';">Keluar</td>
+          <td class="th" style="text-align: center; font-family: 'CustomFontBold';" width="100px">Sisa</td>
         </tr>
           <?php $no = 1?>
           
@@ -101,7 +112,10 @@
                       {{$no}}
                   </td>
                   <td class="td" style="text-align: center;">
-                      {{$value->date}}
+                    {{date('d-m-Y', strtotime($value->date))}}
+                  </td>
+                  <td class="td" style="text-align: right;">
+                    {{$value->stock_awal}}
                   </td>
                   <td class="td" style="text-align: right;">
                       {{$value->masuk}}

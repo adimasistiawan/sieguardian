@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Pemesanan;
 use App\PemesananDetail;
+use App\KartuStok;
 use App\Obat;
 use DB;
 use Carbon\Carbon;
@@ -90,6 +91,7 @@ class PemesananController extends Controller
         $pemesanan = Pemesanan::where('id',$id)->with('users')->first();
         $pemesanan_detail = DB::table('pemesanan_detail')->join('obat','pemesanan_detail.obat_id','obat.id')
                                                          ->select('pemesanan_detail.qty','pemesanan_detail.keterangan','obat.*')
+                                                         ->where('obat.status','active')
                                                          ->where('pemesanan_detail.pemesanan_id',$pemesanan->id)->get();
         return view('pemesanan.show',compact('pemesanan','pemesanan_detail'));
     }
@@ -109,6 +111,7 @@ class PemesananController extends Controller
         $pemesanan = Pemesanan::where('id',$id)->with('users')->first();
         $pemesanan_detail = DB::table('pemesanan_detail')->join('obat','pemesanan_detail.obat_id','obat.id')
                                                          ->select('pemesanan_detail.*')
+                                                         ->where('obat.status','active')
                                                          ->where('pemesanan_detail.pemesanan_id',$pemesanan->id)->get();
         return view('pemesanan.edit',compact('pemesanan','pemesanan_detail','obat'));
     }
@@ -134,6 +137,7 @@ class PemesananController extends Controller
                 'user_id' => Auth::user()->id,
                 'date' => $request->arr['date'],
                 'status' => 'Pending',
+                'alasan' => null
             ]);
             foreach($request->item as $value){
                 PemesananDetail::create([
@@ -150,10 +154,23 @@ class PemesananController extends Controller
                 $pemesanan_detail = PemesananDetail::where('pemesanan_id',$id)->get();
                 foreach($pemesanan_detail as $value){
                     $obat = Obat::find($value->obat_id);
-                    $sisa = PemesananDetail::find($value->id);
-                    $sisa->update([
-                        'sisa_stock' => $obat->stock + $value->qty
-                    ]);
+                    $kartu = KartuStok::where('obat_id',$value->obat_id)->whereDate('date',Carbon::now())->get();
+                    if(count($kartu) == 0){
+                        KartuStok::create([
+                            'date' => Carbon::now(),
+                            'obat_id' => $value->obat_id,
+                            'stock_awal' => $obat->stock,
+                            'masuk' => $value->qty,
+                            'keluar' => 0,
+                            'sisa' => $obat->stock + $value->qty
+                        ]);
+                    }else{
+                        $keluar = KartuStok::where('obat_id',$value->obat_id)->whereDate('date',Carbon::now())->first();
+                        KartuStok::where('obat_id',$value->obat_id)->whereDate('date',Carbon::now())->update([
+                            'masuk' => $keluar->masuk + $value->qty,
+                            'sisa' => $obat->stock + $value->qty
+                        ]);
+                    }
                     $obat->update([
                         'empty_date' => null,
                         'stock' => $obat->stock + $value->qty
@@ -169,6 +186,7 @@ class PemesananController extends Controller
             else{
                 $pemesanan = Pemesanan::findOrFail($id);
                 $pemesanan->update([
+                    'alasan' => $request->alasan,
                     'status' => $request->status,
                 ]);
             }
@@ -197,6 +215,7 @@ class PemesananController extends Controller
     public function pdf($id){
         $pemesanan = Pemesanan::find($id);
         $pemesanan_detail = DB::table('pemesanan_detail')->join('obat','pemesanan_detail.obat_id','obat.id')
+                                                        ->where('obat.status','active')
                                                          ->select('pemesanan_detail.qty','pemesanan_detail.keterangan','obat.*')
                                                          ->where('pemesanan_detail.pemesanan_id',$pemesanan->id)->get();
         $pdf =  PDF::loadView('pemesanan.pdf',compact('pemesanan','pemesanan_detail'));

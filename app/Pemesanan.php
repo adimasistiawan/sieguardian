@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pemesanan extends Model
 {
     protected $table = 'pemesanan';
-    protected $fillable = ['no_invoice','user_id','receive_date','date','status'];
+    protected $fillable = ['no_invoice','user_id','receive_date','date','status','alasan'];
 
     public function users()
     {

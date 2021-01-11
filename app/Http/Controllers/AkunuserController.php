@@ -40,6 +40,10 @@ class AkunuserController extends Controller
      */
     public function store(Request $request)
     {
+        $check = User::where('username', $request->username)->get();
+        if(count($check) > 0){
+            return redirect()->route('akun-user.index')->with('error', 'Gagal. Username sudah pernah digunakan ');;
+        }
         User::create([
             'name' => $request->name,
             'username' => $request->username,
@@ -81,6 +85,11 @@ class AkunuserController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = User::find($id);
+        $check = User::where('username', $request->username)->where('username','!=',$user->username)->get();
+        if(count($check) > 0){
+            return redirect()->route('akun-user.index')->with('error', 'Gagal. Username sudah pernah digunakan ');;
+        }
         if($request->password == null){
             User::find($id)->update([
                 'name' => $request->name,
